@@ -14,61 +14,211 @@
  // Konfiguration
  // ----------------------------------
     
-    $config_user =         "Incoming Webhook";
-    $config_emoji =        "ok_hand";
-    $config_team =         "sefzig"; // unbedingt ersetzen
-    $config_sdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php"; // unbedingt ersetzen
-    $config_service =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh"; // unbedingt ersetzen
-    $config_api =          "abcd-1234567890-1234567890-1234567890-abcdef"; // unbedingt ersetzen
-    $config_kanaldefault = "test"; // unbedingt ersetzen
-    $config_kanal =        ""; // Nutzer-Eingabe
-    $config_text =         ""; // Nutzer-Eingabe
-    $config_kommentar =    ""; // Nutzer-Eingabe
-    $config_name =         ""; // Nutzer-Eingabe
-    $config_link =         "http://%slackteam%.slack.com/messages/%slackkanal%/";
-    $config_erfolg =       '{ status: "Erfolg", link: "%slacklink%" }';
-    $config_fehler =       '{ status: "Fehler", link: "http://sefzig.net/sdn/webhook/slack/" }';
+ // Default-Absender
+    $config_user =         "Buh";
+    $config_emoji =        "ghost";
+    
+ // Default-Zielslack
+    $config_team =         "sefzig";
+    $config_kanal =        "test";
+    
+ // Default-Dienst
+    $config_offen =        "nein"; // ja
+    $config_sdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php";
+    $config_service =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh";
+    $config_api =          "abcd-1234567890-1234567890-1234567890-abcdef";
+    $config_kanaldefault = "test";
+    
+ // Default-Antworten
+    $config_link =         "http://%slackteam%.slack.com/messages/%slackkanal%/"; // Dienst-URL
+    $config_erfolg =       '{ status: "Erfolg", link: "%slacklink%" }'; // String beliebigen Formats
+    $config_fehler =       '{ status: "Fehler", link: "http://sefzig.net/sdn/webhook/slack/" }'; // String beliebigen Formats
+    
+ // Fehlermeldung
+    $config_text =         "Fehler";
+    $config_kommentar =    "Die Einbindung ist falsch konfiguriert.";
+    $config_name =         "incoming.php";
+    
+ // Fehlerbehebung
+    $debug_request =       "PHP Request aus URL:";
     
  // ----------------------------------
- // Variablen und Defaults
+ // URL-Parameter (ohne Dienst)
+ // ----------------------------------
+    
+ // Absender
+    $slackuser         = saubern($_REQUEST["user"]);      $debug_request .= "<br />slackuser:      ".$slackuser."";         
+    $slackemoji        = saubern($_REQUEST["emoji"]);     $debug_request .= "<br />slackemoji:     ".$slackemoji."";        
+    
+ // Zielslack
+    $slackteam         = saubern($_REQUEST["team"]);      $debug_request .= "<br />slackteam:      ".$slackteam."";         
+    $slackkanal        = saubern($_REQUEST["kanal"]);     $debug_request .= "<br />slackkanal:     ".$slackkanal."";        
+    
+ // Nachricht
+    $slacktext         = saubern($_REQUEST["text"]);      $debug_request .= "<br />slacktext:      ".$slacktext."";         
+    $slackkommentar    = saubern($_REQUEST["kommentar"]); $debug_request .= "<br />slackkommentar: ".$slackkommentar."";    
+    $slackname         = saubern($_REQUEST["name"]);      $debug_request .= "<br />slackname:      ".$slackname."";         
+    
+ // Antwort
+    $slacklink         = saubern($_REQUEST["link"]);      $debug_request .= "<br />slacklink:      ".$slacklink."";         
+    $slackerfolg       = saubern($_REQUEST["erfolg"]);    $debug_request .= "<br />slackerfolg:    ".$slackerfolg."";       
+    $slackfehler       = saubern($_REQUEST["fehler"]);    $debug_request .= "<br />slackfehler:    ".$slackfehler."";       
+    
+ // ----------------------------------
+ // Demo-Parameter zu Default
  // ----------------------------------
  
- // Allgemeine Variablen konfigurieren
-    $slackuser         = $_REQUEST["user"];         if (!isset($slackuser))         { $slackuser =         SLACK_USERNAME;     } if ((!isset($slackuser))         || ($slackuser         == "undefined") || ($slackuser         == ""))   { $slackuser         = $config_user; }
-    $slackemoji        = $_REQUEST["emoji"];        if (!isset($slackemoji))        { $slackemoji =        SLACK_EMOJI;        } if ((!isset($slackemoji))        || ($slackemoji        == "undefined") || ($slackemoji        == ""))   { $slackemoji        = $config_emoji; }
-    $slackteam         = $_REQUEST["team"];         if (!isset($slackteam))         { $slackteam =         SLACK_TEAM;         } if ((!isset($slackteam))         || ($slackteam         == "undefined") || ($slackteam         == ""))   { $slackteam         = $config_team; }
-    $slacksdn          = $_REQUEST["sdn"];          if (!isset($slacksdn))          { $slacksdn =          SLACK_SDN;          } if ((!isset($slacksdn))          || ($slacksdn          == "undefined") || ($slacksdn          == "") || ($slacksdn          == "http://sefzig.net/sdn/webhook/slack/incoming.php"))                              { $slacksdn          = $config_sdn; }
-    $slackservice      = $_REQUEST["service"];      if (!isset($slackservice))      { $slackservice =      SLACK_SERVICE;      } if ((!isset($slackservice))      || ($slackservice      == "undefined") || ($slackservice      == "") || ($slackservice      == "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh")) { $slackservice      = $config_service; }
-    $slackapi          = $_REQUEST["api"];          if (!isset($slackapi))          { $slackapi =          SLACK_APIKEY;       } if ((!isset($slackapi))          || ($slackapi          == "undefined") || ($slackapi          == "") || ($slackapi          == "abcd-1234567890-1234567890-1234567890-abcdef"))                                  { $slackapi          = $config_api; }
-    $slackkanaldefault = $_REQUEST["kanaldefault"]; if (!isset($slackkanaldefault)) { $slackkanaldefault = SLACK_KANALDEFAULT; } if ((!isset($slackkanaldefault)) || ($slackkanaldefault == "undefined") || ($slackkanaldefault == ""))   { $slackkanaldefault = $config_kanaldefault; }
-    
- // Laufzeit-Variablen übernehmen
-    $slackkanal        = $_REQUEST["kanal"];        if (!isset($slackkanal))        { $slackkanal =        SLACK_KANAL;        } if ((!isset($slackkanal))        || ($slackkanal        == "undefined")                                ) { $slackkanal        = $slackkanaldefault; }
-    $slacktext         = $_REQUEST["text"];         if (!isset($slacktext))         { $slacktext =         SLACK_TEXT;         } if ((!isset($slacktext))         || ($slacktext         == "undefined")                                ) { $slacktext         = $config_text; }
-    $slackkommentar    = $_REQUEST["kommentar"];    if (!isset($slackkommentar))    { $slackkommentar =    SLACK_KOMMENTAR;    } if ((!isset($slackkommentar))    || ($slackkommentar    == "undefined") || ($slackkommentar    == '""')) { $slackkommentar    = $config_kommentar; }
-    $slackname         = $_REQUEST["name"];         if (!isset($slackname))         { $slackname =         SLACK_NAME;         } if ((!isset($slackname))         || ($slackname         == "undefined")                                ) { $slackname         = $config_name; }
-    
- // Interne Variablen errechnen
-    $slacklink         = $_REQUEST["link"];         if (!isset($slacklink))         { $slacklink =         SLACK_LINK;         } if ((!isset($slacklink))         || ($slacklink         == "undefined") || ($slacklink         == ""))   { $slacklink         = $config_link;   } $slacklink =   str_replace("%slackkanal%", $slackkanal, $slacklink); $slacklink = str_replace("%slackteam%",  $slackteam,  $slacklink);
-    $slackerfolg       = $_REQUEST["erfolg"];       if (!isset($slackerfolg))       { $slackerfolg =       SLACK_ERFOLG;       } if ((!isset($slackerfolg))       || ($slackerfolg       == "undefined") || ($slackerfolg       == ""))   { $slackerfolg       = $config_erfolg; } $slackerfolg = str_replace("%slacklink%",  $slacklink,  $slackerfolg);
-    $slackfehler       = $_REQUEST["fehler"];       if (!isset($slackfehler))       { $slackfehler =       SLACK_FEHLER;       } if ((!isset($slackfehler))       || ($slackfehler       == "undefined") || ($slackfehler       == ""))   { $slackfehler       = $config_fehler; } $slackfehler = str_replace("%slacklink%",  $slacklink,  $slackfehler);
+    if (($slacksdn     == "http://sefzig.net/sdn/webhook/slack/incoming.php"))                              { $slacksdn     = $config_sdn; }
+    if (($slackservice == "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh")) { $slackservice = $config_service; }
+    if (($slackapi     == "abcd-1234567890-1234567890-1234567890-abcdef"))                                  { $slackapi     = $config_api; }
     
  // ----------------------------------
- // PHP-Funktion aufrufen
+ // URL-Parameter säubern
+ // ----------------------------------
+    
+    function saubern($text)
+    {
+       $text = str_replace("%raute%", "#", $text);
+       $text = str_replace("%zeilenumbruch%", "\n", $text);
+       return $text;
+    }
+    
+ // ----------------------------------
+ // Team-Konfigurationen
  // ----------------------------------
  
+    if ($slackteam == "sefzig")
+    {
+       $slackteam =         "sefzig";
+       $slackservice =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh";
+       $slackapi =          "abcd-1234567890-1234567890-1234567890-abcdef";
+       $slacksdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php";
+       $slackkanaldefault = "test";
+    }
+    else if ($slackteam == "OnlineWerbung")
+    {
+       $slackteam =         "onlinewerbung";
+       $slackservice =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh";
+       $slackapi =          "abcd-1234567890-1234567890-1234567890-abcdef";
+       $slacksdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php";
+       $slackkanaldefault = "allgemein";
+    }
+    else if ($slackteam == "SocialMedia")
+    {
+       $slackteam =         "publicissocial";
+       $slackservice =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh";
+       $slackapi =          "abcd-1234567890-1234567890-1234567890-abcdef";
+       $slacksdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php";
+       $slackkanaldefault = "allgemein";
+    }
+    else if ($slackteam == "GoldIdeen")
+    {
+       $slackteam =         "goldideen";
+       $slackservice =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh";
+       $slackapi =          "abcd-1234567890-1234567890-1234567890-abcdef";
+       $slacksdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php";
+       $slackkanaldefault = "allgemein";
+    }
+    else // Defaults
+    {
+       $slackteam =         $config_team;
+       $slackservice =      $config_service;
+       $slackapi =          $config_api;
+       $slacksdn =          $config_sdn;
+       $slackkanaldefault = $config_kanaldefault;
+    }
+    
+ // ----------------------------------
+ // Dienst-Konfig per URL 
+ // ----------------------------------
+    
+    if ($config_offen == "ja")
+    {
+       $slackteam         = saubern($_REQUEST["team"]);         $debug_request .= "<br />slackteam:         ".$slackteam."";          
+       $slacksdn          = saubern($_REQUEST["sdn"]);          $debug_request .= "<br />slacksdn:          ".$slacksdn."";          
+       $slackapi          = saubern($_REQUEST["api"]);          $debug_request .= "<br />slackapi:          ".$slackapi."";          
+       $slackservice      = saubern($_REQUEST["service"]);      $debug_request .= "<br />slackservice:      ".$slackservice."";      
+       $slackkanaldefault = saubern($_REQUEST["kanaldefault"]); $debug_request .= "<br />slackkanaldefault: ".$slackkanaldefault."";
+    }
+    
+ // ----------------------------------
+ // Defaults?
+ // ----------------------------------
+    
+ // Dienst
+    if ((!isset($slacksdn))          || ($slacksdn          == "undefined") || ($slacksdn          == ""))   { $slacksdn          = $config_sdn; }
+    if ((!isset($slackservice))      || ($slackservice      == "undefined") || ($slackservice      == ""))   { $slackservice      = $config_service; }
+    if ((!isset($slackapi))          || ($slackapi          == "undefined") || ($slackapi          == ""))   { $slackapi          = $config_api; }
+    if ((!isset($slackkanaldefault)) || ($slackkanaldefault == "undefined") || ($slackkanaldefault == ""))   { $slackkanaldefault = $config_kanaldefault; }
+    
+ // Absender
+    if ((!isset($slackuser))         || ($slackuser         == "undefined") || ($slackuser         == ""))   { $slackuser         = $config_user; }
+    if ((!isset($slackemoji))        || ($slackemoji        == "undefined") || ($slackemoji        == ""))   { $slackemoji        = $config_emoji; }
+    
+ // Nutzer-Eingaben
+    if ((!isset($slackteam))         || ($slackteam         == "undefined") || ($slackteam         == ""))   { $slackteam         = $config_team; }
+    if ((!isset($slackkanal))        || ($slackkanal        == "undefined"))                                 { $slackkanal        = $slackkanaldefault; }
+    if ((!isset($slacktext))         || ($slacktext         == "undefined"))                                 { $slacktext         = $config_text; }
+    if ((!isset($slackkommentar))    || ($slackkommentar    == "undefined") || ($slackkommentar    == '""')) { $slackkommentar    = $config_kommentar; }
+    if ((!isset($slackname))         || ($slackname         == "undefined"))                                 { $slackname         = $config_name; }
+    
+ // Antwort
+    if ((!isset($slacklink))         || ($slacklink         == "undefined") || ($slacklink         == ""))   { $slacklink         = $config_link;   } 
+    if ((!isset($slackerfolg))       || ($slackerfolg       == "undefined") || ($slackerfolg       == ""))   { $slackerfolg       = $config_erfolg; } 
+    if ((!isset($slackfehler))       || ($slackfehler       == "undefined") || ($slackfehler       == ""))   { $slackfehler       = $config_fehler; } 
+    
+ // ----------------------------------
+ // Antworten ausfüllen
+ // ----------------------------------
+    
+    $slacklink =   str_replace("%slackkanal%", $slackkanal, $slacklink); 
+    $slacklink =   str_replace("%slackteam%",  $slackteam,  $slacklink);
+    
+    $slackerfolg = str_replace("%slacklink%",  $slacklink,  $slackerfolg);
+    $slackfehler = str_replace("%slacklink%",  $slacklink,  $slackfehler);
+    $slackerfolg = str_replace("%slackkanal%", $slackkanal, $slackerfolg); 
+    $slackfehler = str_replace("%slackkanal%", $slackkanal, $slackfehler); 
+    
+ // ----------------------------------
+ // Slackhook aufrufen
+ // ----------------------------------
+ 
+ // Funktion aufrufen
+    $slackwebhook = slackhook(
+       $slackteam, 
+       $slackkanal, 
+       $slackservice, 
+       $slackapi, 
+       $slackkanaldefault, 
+       $slackuser, 
+       $slackemoji, 
+       $slacktext, 
+       $slackkommentar, 
+       $slackname, 
+       $slacklink, 
+       $slackerfolg, 
+       $slackfehler, 
+       $debug_request);
+    
  // Wenn Slack-Webhook erfolgreich
-    if (slackhook($slackuser, $slackemoji, $slackteam, $slackservice, $slackapi, $slackkanaldefault, $slackkanal, $slacktext, $slackkommentar, $slackkommentar, $slackname, $slacklink, $slackerfolg, $slackfehler) == "ok") {
+    if ($slackwebhook == "ok") {
     
     // Erfolgsmeldung antwoten
-       echo $slackerfolg;
+       echo $slackerfolg; 
+    // echo "<br /><br />"; 
+    // echo $debug_request; 
     }
     
  // Wenn Slack-Webhook nicht erfolgreich
     else {
     
-    // Fehlermeldung antwoten
-       echo $slackfehler; /*
+    // Fehlermeldung antworten
+       echo $slackfehler;
+       echo "<br /><br />";
+       echo "Debug Request:<br />";
+       echo $debug_request;
+       echo "<br /><br />";
+       echo "Nutzer-Eingaben";
        echo "<ul>";
        echo   "<li> slacktext: ".$slacktext."</li>";
        echo   "<li> slackkanal: ".$slackkanal."</li>";
@@ -76,22 +226,45 @@
        echo   "<li> slackuser: ".$slackuser."</li>";
        echo   "<li> slackname: ".$slackname."</li>";
        echo   "<li> slackkommentar: ".$slackkommentar."</li>";
-       echo "</ul>"; */
+       echo "</ul>";
     }
     
  // ----------------------------------
- // PHP-Funktion der Integration
+ // Webhook-Funktion
  // ----------------------------------
  
- // CURL-Webhooks an Slack
-    function slackhook($slackuser, $slackemoji, $slackteam, $slackservice, $slackapi, $slackkanaldefault, $slackkanal, $slacktext, $slackkommentar, $slackkommentar, $slackname, $slacklink, $slackerfolg, $slackfehler) {
+    function slackhook($slackteam, 
+       $slackkanal, 
+       $slackservice, 
+       $slackapi, 
+       $slackkanaldefault, 
+       $slackuser, 
+       $slackemoji, 
+       $slacktext, 
+       $slackkommentar, 
+       $slackname, 
+       $slacklink, 
+       $slackerfolg, 
+       $slackfehler,
+       $slackdebug) {
     
-    // Fallbacks für Kanal und Botname
+    // -------------------------------
+    // Fallbacks
+    // -------------------------------
+ 
        $slackkanal = ($slackkanal) ? $slackkanal : $slackkanaldefault;
-       $slackuser =   ($slackuser)   ? $slackuser   : $slackuser." (!)";
+       $slackuser =  ($slackuser)  ? $slackuser  : $slackuser." (!)";
        
+    // -------------------------------
+    // Nachrichten-Anhang
+    // -------------------------------
+ 
     // Wenn Kommentar und Name angegeben wurden
-       if ((isset($slackname)) && ($slackname != "") && (isset($slackkommentar)) && ($slackkommentar != "") && ($slackkommentar != '""')) {
+       if ((isset($slackname)) 
+          && ($slackname != "") 
+          && (isset($slackkommentar)) 
+          && ($slackkommentar != "") 
+          && ($slackkommentar != '""')) {
 
        // Kommentar und Name übernehmen
           $nachricht = "".$slackname.": ".$slackkommentar."";
@@ -100,7 +273,9 @@
        }
        
     // Wenn nur ein Kommentar eingegeben wurde
-       else if ((isset($slackkommentar)) && ($slackkommentar != "")) {
+       else 
+       if ((isset($slackkommentar)) 
+          && ($slackkommentar != "")) {
        
        // Kommentar übernehmen
           $nachricht = $slackkommentar;
@@ -108,24 +283,30 @@
        }
        
     // Wenn nur der Name angegeben wurde
-       else if ((isset($slackname)) && ($slackname != "")) {
+       else 
+       if ((isset($slackname)) 
+          && ($slackname != "")) {
        
        // Name übernehmen
           $nachricht = $slackname;
           $value = $slackname;
        }
        
+    // -------------------------------
+    // Nachricht-Bestandteile zu Array
+    // -------------------------------
+ 
     // Wenn Kommentar und-oder Name angegeben wurden
        if ((isset($nachricht)) && ($nachricht != "")) {
        
-       // Slack-Message-Anhang-Feld setzen
+       // Anhang-Feld
           $feld = array([
              "title"       =>  $title,
              "value"       =>  $value,
              "short"       =>  false 
           ]);
        
-       // Slack-Message-Anhang setzen 
+       // Anhang
           $anhang = array([
              "fallback"    =>  $nachricht,
           // "pretext"     =>  $nachricht,
@@ -134,7 +315,7 @@
           ]);
        }
        
-    // Slack-Message setzen 
+    // Nachricht
        $data = array(
           "token"          =>  $slackapi,
           "channel"        => "#".$slackkanal,
@@ -145,10 +326,14 @@
           "mrkdwn"         =>  true
        );
        
-    // Slack-Message Json-encodieren
+    // Nachricht Json-encodieren
        $data = json_encode($data);
        
-    // Slack-Service mit Curl aufrufen
+    // -------------------------------
+    // Dienst mit Curl ansprechen
+    // -------------------------------
+ 
+    // Slack-Service aufrufen
        $ch = curl_init($slackservice);
        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
        curl_setopt($ch, CURLOPT_POSTFIELDS, array('payload' => $data));
@@ -160,83 +345,110 @@
     // Slack-Service schließen
        curl_close($ch);
     
-    // Webservice-Antwort ausgeben
+    // -------------------------------
+    // Antwort
+    // -------------------------------
+ 
+    // Antwort ausgeben
        return $result;
     }
     
  // ----------------------------------
  // Einbindung PHP
- // ----------------------------------
- 
- /* Slack-Integration: Konfiguration
-    define( 'SLACK_USERNAME',     'Slack-Integration' );
-    define( 'SLACK_EMOJI',        'ghost' );
-    define( 'SLACK_TEAM',         'sefzig' );
-    define( 'SLACK_SDN',          'http://sefzig.net/sdn/webhook/slack/incoming.php' );
-    define( 'SLACK_SERVICE',      'https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh' );
-    define( 'SLACK_APIKEY',       'abcd-1234567890-1234567890-1234567890-abcdef' );
-    define( 'SLACK_KANALDEFAULT', 'test' );
-                
- // Slack-Integration: Laufzeit
-    define( 'SLACK_KANAL',        '' ); // Wird im Zweifel Default
-    define( 'SLACK_TEXT',         '' );
-    define( 'SLACK_KOMMENTAR',    '' );
-    define( 'SLACK_NAME',         '' );
+ /* ----------------------------------
     
- // Slack-Integration: Oberfläche
-    define( 'SLACK_LINK',         'http://%slackteam%.slack.com/messages/%slackkanal%/' ); // Kann %slackteam% und %slackkanal% enthalten
-    define( 'SLACK_ERFOLG',       '{ status: "Erfolg", link: "%slacklink%" }' ); // Kann %slacklink% enthalten
-    define( 'SLACK_FEHLER',       '{ status: "Fehler", link: "http://sefzig.net/sdn/webhook/slack/" }' ); // Kann %slacklink% enthalten
-                
- // Slack-Integration: Sdn Webook Slack Incoming
-    require_once('/www/htdocs/.../sdn/webhook/slack/incoming.php');
- */                
+ // Dienst
+    $config_sdn =          "http://sefzig.net/sdn/webhook/slack/incoming.php";
+ // $config_service =      "https://hooks.slack.com/services/123456789/abcdefghihklmnopqrstuvwxyzabcdefgh";
+ // $config_api =          "abcd-1234567890-1234567890-1234567890-abcdef";
+ // $config_kanaldefault = "test";
+    
+ // Zielslack
+    $config_team =         "sefzig";
+    $config_kanal =        "test";
+    
+ // Absender
+    $config_user =         "Buh";
+    $config_emoji =        "ghost";
+    
+ // Nachricht
+    $config_text =         "Titel: Der Text";
+    $config_kommentar =    "Der Kommentar.";
+    $config_name =         "Der Name";
+    
+ // Antworten
+    $config_link =         'http://%slackteam%.slack.com/messages/%slackkanal%/'; // Dienst-URL
+    $config_erfolg =       '{ status: "Erfolg", link: "%slacklink%" }'; // String beliebigen Formats
+    $config_fehler =       '{ status: "Fehler", link: "http://sefzig.net/sdn/webhook/slack/" }'; // String beliebigen Formats
+    
+ // Slack-URI
+    $uri = $config_sdn;
+    $uri = $uri."?user="        .$config_user;
+    $uri = $uri."&emoji="       .$config_emoji;
+    $uri = $uri."&team="        .$config_team;
+    $uri = $uri."&sdn="         .$config_sdn;
+    $uri = $uri."&service="     .$config_service;
+    $uri = $uri."&api="         .$config_api;
+    $uri = $uri."&kanaldefault=".$config_kanaldefault;
+    $uri = $uri."&link="        .$config_link;
+    $uri = $uri."&erfolg="      .$config_erfolg;
+    $uri = $uri."&fehler="      .$config_fehler;
+    $uri = $uri."&text="        .$config_text;
+    $uri = $uri."&kommentar="   .$config_kommentar;
+    $uri = $uri."&name="        .$config_name;
+    
+ // Slack-Integration
+    require_once($uri); */
  
  // ----------------------------------
  // Einbindung jQuery
  // ----------------------------------
  /*
  // Ajax vorbereiten
+    var url = "http://sefzig.net/sdn/webhook/slack/incoming.php";
     var par = "";
-    var cachebreaker = Math.floor((Math.random() * 999999) + 1);
     
- // Allgemeine Variablen
-    var url =          $("#sdn").val();
-    var sdn =          $("#sdn")         .val(); var par = par+"&sdn="         +sdn;
-    var service =      $("#service")     .val(); var par = par+"&service="     +service;
-    var api =          $("#api")         .val(); var par = par+"&api="         +api;
-    var kanaldefault = $("#kanaldefault").val(); var par = par+"&kanaldefault="+kanaldefault;
+ // Zielslack
+    var team =         $("#team")        .val(); var par = par+"?team="        +team;
+    var kanal =        $("#kanal")       .val(); var par = par+"&kanal="       +kanal;
     
- // Nutzer-Eingaben
+ // Dienst
+ // var service =      $("#service")     .val(); var par = par+"&service="     +service;
+ // var api =          $("#api")         .val(); var par = par+"&api="         +api;
+ // var sdn =          $("#sdn")         .val(); var par = par+"&sdn="         +sdn;
+ // var kanaldefault = $("#kanaldefault").val(); var par = par+"&kanaldefault="+kanaldefault;
+    
+ // Absender
     var user =         $("#user")        .val(); var par = par+"&user="        +user;
     var emoji =        $("#emoji")       .val(); var par = par+"&emoji="       +emoji;
-    var team =         $("#team")        .val(); var par = par+"&team="        +team;
     
- // Laufzeit-Variablen
-    var kanal =        $("#kanal")       .val(); var par = par+"&kanal="       +kanal;
+ // Nachricht
     var text =         $("#text")        .val(); var par = par+"&text="        +text;
     var kommentar =    $("#kommentar")   .val(); var par = par+"&kommentar="   +kommentar;
     var name =         $("#name")        .val(); var par = par+"&name="        +name;
     
- // Interne Variablen
+ // Antwort
     var link =         $("#link")        .val(); var par = par+"&link="        +link;
     var erfolg =       $("#erfolg")      .val(); var par = par+"&erfolg="      +erfolg;
     var fehler =       $("#fehler")      .val(); var par = par+"&fehler="      +fehler;
     
  // Ajax-URL zusammensetzen
-    url = url+"?cachebreaker="+cachebreaker+""+par;
+    var cachebreaker = Math.floor((Math.random() * 999999) + 1);
+    url = url+"?c="+cachebreaker+""+par;
     
- // Skript mit Ajax ansprechen
+ // Webservice
     $.get(url, function(data) {
     // alert( "jQuery.get(): "+data );
     })
+    
+ // Ajax erfolgreich
     .done(function(data) {
-    // Ajax erfolgreich
-       $("#ausgabe").html("Antwort: "+data).show();
+       $("#ausgabe").html(""+data).show();
     })
+    
+ // Ajax fehlerhaft
     .fail(function(data) {
-    // Ajax fehlerhaft
-       $("#ausgabe").html("Antwort: "+data).show();
+       $("#ausgabe").html("Fehler: "+data).show();
     });
   */
   
