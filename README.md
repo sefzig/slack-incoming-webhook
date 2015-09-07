@@ -16,10 +16,10 @@ Inhalt
 Installation
 
 * Webservice
-** incoming.php irgendwo auf einem PHP-Server mit Curl-Erweiterung ablegen.
-** Abschnitte "Konfiguration" und "Team-Konfiguration" anpassen.
-** incoming.php als PHP einbinden oder mit Ajax aufrufen.
+- incoming.php irgendwo auf einem PHP-Server mit Curl-Erweiterung ablegen.
+- Abschnitte "Konfiguration" und "Team-Konfiguration" anpassen.
+- incoming.php als PHP einbinden oder mit Ajax aufrufen.
 * Eingabe
-** index.php umbenennen und irgendwo auf einem PHP-Server ablegen.
-** Abschnitt "Konfiguration" anpassen.
-** index.php nach belieben Anpassen und (mit URL-Parametern vorkonfiguriert) aufrufen.
+- index.php umbenennen und irgendwo auf einem PHP-Server ablegen.
+- Abschnitt "Konfiguration" anpassen.
+- index.php nach belieben Anpassen und (mit URL-Parametern vorkonfiguriert) aufrufen.
